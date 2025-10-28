@@ -28,16 +28,15 @@ To establish a hybrid identity environment where on-premises users can authentic
 
 <h2>Labs walk-through:</h2>
 
-### 1️⃣ Configure Authentication Methods
-1. Go to **Entra ID → Protection → Authentication methods**  
-2. Enable:  
-   - **Microsoft Authenticator (Passwordless sign-in)**  
-   - **Temporary Access Pass (TAP)**  
-3. Target to all users or a test group
+### 1️⃣ Install Entra Connect with **Custom Settings 
+1. Install, once installation is complete > Choose **Password Hash Sync as sync method
+2. Connect Entra ID by login In with Admin account → Next**
+3. In connect your directories > Add Directory > Create new AD account > Provide Username and password of new account > Next
+4. Domain and OU filtering > Choose to sync all directories or selected Directories:  
 
 <p align="center">
-Authentication Method: <br/>
-<img src="https://imgur.com/bY42WaD.png" height="80%" width="80%" alt=/>
+Install Entra Connect: <br/>
+<img src="https://imgur.com/9RcTRyq.png" height="80%" width="80%" alt=/>
 <br />
 <br />
 
@@ -151,25 +150,15 @@ Validationg Is granted <br/>
 <br />
 <br />
 
-## 📈 Result & Behavior
-> When users activate a privileged role, Conditional Access evaluates the **Authentication Context (`PIM-Auth`)**.  
->  
-> The CA policy enforces the **Passwordless_Strength**, requiring either passwordless sign-in or TAP.  
->  
-> If initial sign-in used a password, Entra ID steps up the session to meet the passwordless requirement before role activation.  
->  
-> The result is a secure, Zero Trust aligned design with **adaptive authentication** and **role-based protection**.
-
----
-
 ## 💡 Key Learnings
 
-| Area | Learning Outcome |
-|------|------------------|
-| **Conditional Access** | Designed and applied a CA policy linked to authentication context and custom strength |
-| **Authentication Strengths** | Defined passwordless and TAP methods to enforce strong MFA |
-| **PIM Integration** | Implemented step-up authentication for privileged role activation |
-| **Zero Trust Design** | Achieved context-aware access and strong identity assurance |
+- Password Hash Sync provides a simple and secure hybrid identity approach for most organizations.
+- Password Hash Sync is reliable and easy to maintain for hybrid identity models.  
+- Password Writeback keeps user credentials aligned across environments.  
+- Combining both simplifies identity management while enhancing user experience.
+- Password Writeback bridges modern cloud self-service features with on-premises infrastructure.  
+- Ensuring proper permissions and verified UPN suffixes is crucial for successful sync.  
+- Azure AD Connect Health helps monitor and maintain synchronization reliability.
 
 --!>
 
