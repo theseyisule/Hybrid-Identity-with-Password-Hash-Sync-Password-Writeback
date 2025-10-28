@@ -7,38 +7,27 @@ This project demonstrates a hybrid identity configuration between **Active Direc
 <br />
 
 ## 🎯 Lab Objective
-To configure a Conditional Access policy that enforces **passwordless authentication (via Microsoft Authenticator or Temporary Access Pass)** when a user attempts to **activate a privileged role through PIM**, ensuring sensitive operations require stronger authentication.
+To establish a hybrid identity environment where on-premises users can authenticate to Microsoft 365 services using synchronized credentials, and where password resets initiated in the cloud reflect seamlessly in the on-premises directory.
 
 ## ⚙️ Key Configuration Steps
-1. **Create an Authentication Strength**  
-   - Include **Microsoft Authenticator phone sign-in** and **Temporary Access Pass (TAP)** as valid passwordless methods.
-
-2. **Create an Authentication Context**  
-   - Define a tag (e.g., `pim-auth-context`) to identify when stronger authentication should be applied.
-
-3. **Configure a Conditional Access Policy**  
-   - Target the Authentication Context created above.  
-   - Apply the **Authentication Strength** requiring passwordless methods.  
-   - Enforce this policy when users access or activate PIM-protected roles.
-
-4. **Set Up Privileged Identity Management (PIM)**  
-   - Assign a user as eligible for a privileged role (e.g., *Security Administrator*).  
-   - Require activation with justification and apply the step-up Conditional Access policy.  
-   - During activation, the policy triggers the passwordless requirement (TAP or Authenticator).
-
+1. Create on-premises user accounts within the AD DS environment.  
+2. Install **Azure AD Connect** on the domain controller.  
+3. Configure **Password Hash Synchronization (PHS)** for hybrid identity sync.  
+4. Enable **Password Writeback** within Azure AD Connect.  
+5. Configure **Self-Service Password Reset (SSPR)** in Microsoft Entra ID for scoped users.  
+6. Test password reset from the Microsoft 365 portal and confirm on-premises synchronization.
 
 <h2>Platforms & Tools Used</h2>
 
-| Category | Portal / Tool | Purpose |
-|-----------|----------------|----------|
-| **Identity & Access** | Microsoft Entra ID Portal| Configure Conditional Access, PIM, Authentication Methods, Authentication Contexts and Authentication Strengths |
-| **Administration** | Microsoft 365 Admin Center| Manage users, licenses, and global tenant configuration |
-| **ID Governance** | Entra ID > ID Governance > Privileged Identity Management| Assign and activate eligible roles for privileged access testing |
-| **Device Access** | Mobile Device with Microsoft Authenticator App | Enable passwordless sign-in and approve multi-factor authentication requests |
-| **Temporary Access Pass (TAP)** | Entra ID > Authentication Methods | Generate and use TAP for passwordless testing |
-
+- **Windows Server 2016** – hosting **Active Directory Domain Services (AD DS)** and **Entra Connect**
+- **Microsoft Entra ID (Azure AD)**
+- **Microsoft Entra Connect (Azure AD Connect)** – hybrid identity bridge.
+- **Microsoft 365 Admin Center** – used to verify synchronized users and password reset operations.
+- **Event Viewer (Windows Server 2016)** – monitored **Password Writeback** logs confirming synchronization from cloud to on-prem AD.
+- **Microsoft Entra ID Audit Logs** – tracked **Self-Service Password Reset (SSPR)** activity, including registration, reset initiation, and success events.
 
 <h2>Labs walk-through:</h2>
+
 ### 1️⃣ Configure Authentication Methods
 1. Go to **Entra ID → Protection → Authentication methods**  
 2. Enable:  
