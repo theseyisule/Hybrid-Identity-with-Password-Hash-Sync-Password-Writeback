@@ -12,7 +12,7 @@ To establish a hybrid identity environment where on-premises users can authentic
 ## ⚙️ Key Configuration Steps
 1. Create on-premises user accounts within the AD DS environment.  
 2. Install **Azure AD Connect** on the domain controller.  
-3. Configure **Password Hash Synchronization (PHS)** for hybrid identity sync.  
+3. Configure **Password Hash Synchronization ** for hybrid identity sync.  
 4. Enable **Password Writeback** within Azure AD Connect.  
 5. Configure **Self-Service Password Reset (SSPR)** in Microsoft Entra ID for scoped users.  
 6. Test password reset from the Microsoft 365 portal and confirm on-premises synchronization.
@@ -28,11 +28,16 @@ To establish a hybrid identity environment where on-premises users can authentic
 
 <h2>Labs walk-through:</h2>
 
-### 1️⃣ Install Entra Connect with **Custom Settings 
-1. Install, once installation is complete > Choose **Password Hash Sync as sync method
-2. Connect Entra ID by login In with Admin account → Next**
-3. In connect your directories > Add Directory > Create new AD account > Provide Username and password of new account > Next
-4. Domain and OU filtering > Choose to sync all directories or selected Directories:  
+### 1️⃣ Install and Configure Entra Connect (Custom Settings)
+
+1. **Run the Entra Connect Installer** and select **Custom ** during setup.  
+2. Once installation is complete, choose **Password Hash Synchronization ** as the preferred authentication method.  
+3. **Connect to Entra ID (Azure AD)** by signing in with **Global Administrator credentials**, then select **Next**.  
+4. Under **Connect your directories**, select **Add Directory** → choose **Create new AD DS Connector account** → provide the **username and password** of the new account → click **Next**.  
+5. In **Domain and OU Filtering**, choose whether to synchronize **all directories** or **specific Organizational Units (OUs)**, depending on your sync scope → click **Next**.  
+6. Under **Optional Features**, ensure **Password Hash Synchronization** is **enabled** → click **Next**.  
+7. Review the configuration summary and click **Install** to begin synchronization.  
+8. Once installation completes, monitor and verify that the initial synchronization has successfully finished via the **Synchronization Service Manager** or **Event Viewer logs** on the server.  
 
 <p align="center">
 Install Entra Connect: <br/>
@@ -40,39 +45,74 @@ Install Entra Connect: <br/>
 <br />
 <br />
 
- ### 2️⃣ Create an Authentication Strength
-1. Navigate to **Authentication Strengths**  
-2. Create New Authentication Strength: `AuthStrenght_PSWLess_PIM`  
-3. Include:  
-   - ✅ Microsoft Authenticator (Phone sign-in)  
-   - ✅ Temporary Access Pass (One-time Use)  
-4. Save and confirm 
-
-Create New Authentication Strenght:  <br/>
-<img src="https://imgur.com/buqnj7R.png" height="80%" width="80%" alt=/>
+OU Filtering and Optional Features:  <br/>
+<img src="https://imgur.com/Fmh3Xmz.png" height="80%" width="80%" alt=/>
 <br />
 <br />
 
-### 3️⃣ Create an Authentication Context
-1. Go to **Protection → Conditional Access → Authentication Contexts**  
-2. Create a new context named `PIM-Auth`  
-3. Add description and save  
-   *(Acts as a logical tag for the CA policy)*
+Configuration complete:  <br/>
+<img src="https://imgur.com/sA5FrvY.png" height="80%" width="80%" alt=/>
+<br />
+<br />
+
+Hybrid Setup confirmed:  <br/>
+<img src="https://imgur.com/ees9uer.png" height="80%" width="80%" alt=/>
+<br />
+<br />
+
+Synchronization Service:  <br/>
+<img src="https://imgur.com/PuzX7l0.png" height="80%" width="80%" alt=/>
+<br />
+<br />
+
+### 2️⃣ Prepare AD for Password Writeback
+
+1. **Enable Advanced Features in Active Directory Users and Computers:**  
+   - Open **AD** → click **View** → select **Advanced Features**.  
+   - Right-click the domain root → choose **Find** → locate the **Microsoft Entra Connector account** used by Entra Connectby typing Msol and click Find Now.  
+
+2. **Grant Required Permissions to the Connector Account:**  
+   - Right-click the User → select **Properties** → go to the **Security** tab → click **Advanced**.  
+   - Select **Add** → click **Select a principal** → add the **MSOL** service account, Check Names.  
+   - Under Type: Allow | Under **Applies to**, choose **Descendant User Objects**.  
+   - In **Permissions**, Enable Reset password and Change password | In **Properties**, Enable **lockoutTime** and **pwdLastSet** → click **Apply** → **OK** to save changes.  
+
+3. **Modify Group Policy to Allow Immediate Password Changes:**  
+   - Open **Group Policy Management Console (GPMC)** → expand **Forest > Domains > Group Policy Objects**.  
+   - Right-click **Default Domain Policy** → select **Edit**.  
+   - Navigate to:  
+     **Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy**.  
+   - Set **Minimum password age** to **0 days** to allow immediate password resets.  
+
+### 3️⃣ Prepare Entra Connect for Password Writeback
+
+1. Open **Entra Connect** on the synchronization server.  
+2. Sign in with **Global Administrator credentials** → click **Next** to connect to Entra ID.  
+3. Continue to the **Optional Features** page → select **Password Writeback** → click **Next**.  
+4. Review configuration → click **Configure** to enable Password Writeback functionality → Configure
+
+### 4️⃣ Verify On-Premises Integration Settings in Entra ID and Enable SSPR and Validate Password Writeback
+
+1. In the **Microsoft Entra admin center**, navigate to:  
+   **Users → Password Reset → On-premises integration**.  
+2. Confirm that the **Integration with on-premises directories** option is **Enabled**.  
+3. Under **Manage settings**, ensure that:  
+   - **Enable password writeback for synced users** is turned **On**.  
+   - **Allow users to unlock accounts without resetting their password** is turned **On**.  
+4. In the **Microsoft Entra admin center**, navigate to: **Users → Password Reset → Properties** → enable **Self-Service Password Reset (SSPR)** for selected users or groups.
+5. Configure authentication methods (e.g., mobile app, email, security questions).
+6. Perform a **password change** and a **password reset** from the **Microsoft 365 portal** using a cloud-synced user account.
+7. Validate that the reset event is reflected in **on-prem AD DS**, confirming that **Password Writeback** successfully synchronized the change back to the domain.  
 
 New Authentication Context: <br/>
 <img src="https://imgur.com/z3x6zvK.png" height="80%" width="80%" alt=/>
 <br />
 <br />
 
-### 4️⃣ Create a Conditional Access Policy
-1. Go to **Conditional Access → Policies → New Policy**  
-2. Give it a Name
-3. Assignments:  
-   - **Users**: Target your test user or group  
-   - **Target Resources**: Select *Authentication context → Choose the custom auth context created PIM-Auth*  
-4. Grant Controls:  
-   - Require **Authentication Strength → Choose the custom Strength Created**  
-5. Enable the policy
+New Authentication Context: <br/>
+<img src="https://imgur.com/z3x6zvK.png" height="80%" width="80%" alt=/>
+<br />
+<br />
 
 Traget Resources:  <br/>
 <img src="https://imgur.com/Il7nGzW.png" height="80%" width="80%" alt=/>
@@ -84,15 +124,6 @@ Access Control:  <br/>
 <br />
 <br />
 
-### 5️⃣ Configure Privileged Identity Management (PIM)
-1. Navigate to **Entra ID > Privileged Identity Management > Roles > Choose the Administrator role > Add Assignments**  
-2. Select **Security Administrator** (or preferred role)
-3. Add a user as member or add a group.
-4. Setting > Assignment Type as **Eligible**
-5. Assign your test user as *eligible* for the role
-6. Configure role settings for Privileged Role, On Activation, Require Microsoft Entra conditional Access Authentication context > Select the Authentication context created.
-7. Select the method of justification as **Require justification on activation** 
-
 PIM configuration:  <br/>
 <img src="https://imgur.com/erhJyHR.png" height="80%" width="80%" alt=/>
 <br />
@@ -103,31 +134,15 @@ PIM configuration:  <br/>
 <br />
 <br />
 
-### 6️⃣ Test the Scenario on User's side. 
-1. Sign in as the test user  
-2. Go to **Entra ID → Privileged Identity Management → My Roles**  
-3. Attempt to **activate** the `Security Administrator` role  
-4. Observe:  
-   - If signed in with password → prompt for Temporary Access Password(stronger auth)  
-   - If signed in passwordlessly → activation succeeds  
-5. After TAP setup, activation completes successfully
 User tries to activate the Role  <br/>
 <img src="https://imgur.com/MQsdjUJ.png" height="80%" width="80%" alt=/>
 <br />
 <br />
 
-The user initially signed in with password + Authenticator (MFA).
-1. That satisfies “multi-factor” but not “passwordless” since a password was used.
-2. When the user tried to activate the PIM role, PIM invoked the authentication context.
-3. The conditional access policy tied to that context checked the authentication strength requirement and found: The current session used password + MFA, not passwordless.”
-4. Because of that, it prompted for one of the methods that qualify under the Authentication strength configured: Microsoft Authenticator phone sign-in or Temporary Access Pass
-
 PIM Requirement Request  <br/>
 <img src="https://imgur.com/CrJhPL6.png" height="80%" width="80%" alt=/>
 <br />
 <br />
-
-Since the user didn’t yet have a TAP configured and wasn’t set up for passwordless phone sign-in, Entra ID correctly said: “You need your admin to create a Temporary Access Pass.”
 
 PIM Requirement Request  <br/>
 <img src="https://imgur.com/LGxLMVC.png" height="80%" width="80%" alt=/>
@@ -144,7 +159,6 @@ USer Revalidates and Porvided TAP <br/>
 <br />
 <br />
 
-Once admin created the TAP and the user retried, Entra ID accepted that TAP authentication as valid for passwordless authentication strength, allowing the PIM role activation.
 Validationg Is granted <br/>
 <img src="https://imgur.com/EdzD95p.png" height="80%" width="80%" alt=/>
 <br />
