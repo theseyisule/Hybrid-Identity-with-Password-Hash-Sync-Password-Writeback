@@ -12,7 +12,7 @@ To establish a hybrid identity environment where on-premises users can authentic
 ## ⚙️ Key Configuration Steps
 1. Create on-premises user accounts within the AD DS environment.  
 2. Install **Azure AD Connect** on the domain controller.  
-3. Configure **Password Hash Synchronization ** for hybrid identity sync.  
+3. Configure **Password Hash Synchronization** for hybrid identity sync.  
 4. Enable **Password Writeback** within Azure AD Connect.  
 5. Configure **Self-Service Password Reset (SSPR)** in Microsoft Entra ID for scoped users.  
 6. Test password reset from the Microsoft 365 portal and confirm on-premises synchronization.
@@ -65,7 +65,7 @@ Synchronization Service:  <br/>
 <br />
 <br />
 
-### 2️⃣ Prepare AD for Password Writeback
+### 2️⃣ Prepare AD for Password Writeback https://learn.microsoft.com/en-us/entra/identity/authentication/tutorial-enable-sspr-writeback
 
 1. **Enable Advanced Features in Active Directory Users and Computers:**  
    - Open **AD** → click **View** → select **Advanced Features**.  
